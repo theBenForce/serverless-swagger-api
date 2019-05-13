@@ -1,0 +1,19 @@
+{
+  "name": "serverless-swagger-api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "author": {
+    "name": "Ben Force",
+    "email": "benforce@gmail.com"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.1",
+    "@types/serverless": "^1.18.2",
+    "serverless": "^1.42.2",
+    "typescript": "^3.4.5"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}
