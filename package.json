@@ -1,7 +1,14 @@
 {
   "name": "serverless-swagger-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:theBenForce/serverless-swagger-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theBenForce/serverless-swagger-api/issues"
+  },
   "license": "MIT",
   "author": {
     "name": "Ben Force",
