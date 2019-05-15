@@ -29,6 +29,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
   const stage = serverless.service.provider.stage;
   const service = serverless.service.getServiceName();
   const functionNames = [];
+  const lambdaPermissions = {};
 
   for (const path in restApi.Body.paths) {
     const methods = restApi.Body.paths[path];
@@ -48,19 +49,31 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
         responses: {}
       };
 
-      resources[`${key}${functionName}Permission`] = {
+      if (!lambdaPermissions[functionName]) {
+        lambdaPermissions[functionName] = [];
+      }
+
+      lambdaPermissions[functionName].push(`${method.toUpperCase()}${path}`);
+    }
+  }
+
+  functionNames.forEach(functionName => {
+    const paths = lambdaPermissions[functionName];
+
+    paths.forEach(path => {
+      resources[`${key}${functionName}${path.replace("/", "")}Permission`] = {
         Type: "AWS::Lambda::Permission",
         Properties: {
           FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
           Action: "lambda:InvokeFunction",
           Principal: { "Fn::Sub": "apigateway.${AWS::URLSuffix}" },
           SourceArn: {
-            "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${method.toUpperCase()}${path}`
+            "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${path}`
           }
         }
       };
-    }
-  }
+    });
+  });
 
   // Create api
   resources[key] = {
