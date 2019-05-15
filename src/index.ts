@@ -28,7 +28,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
     serverless.service.provider.compiledCloudFormationTemplate.Resources;
   const stage = serverless.service.provider.stage;
   const service = serverless.service.getServiceName();
-  const lambdaNames = [];
+  const functionNames = [];
 
   for (const path in restApi.Body.paths) {
     const methods = restApi.Body.paths[path];
@@ -36,7 +36,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
     for (const method in methods) {
       const methodProps = methods[method];
       const functionName = methodProps["x-lambda-name"];
-      lambdaNames.push(functionName);
+      functionNames.push(functionName);
 
       methodProps["x-amazon-apigateway-integration"] = {
         uri: {
@@ -48,7 +48,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
         responses: {}
       };
 
-      resources[`${key}Permission`] = {
+      resources[`${key}${functionName}Permission`] = {
         Type: "AWS::Lambda::Permission",
         Properties: {
           FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
@@ -97,7 +97,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
           PolicyName: `${stage}-${service}-${key}-APIPolicy`,
           PolicyDocument: {
             Version: "2012-10-17",
-            Statement: lambdaNames.map(functionName => ({
+            Statement: functionNames.map(functionName => ({
               Action: "lambda:InvokeFunction",
               Resource: { "Fn::Sub": `\${${functionName}.Arn}` },
               Effect: "Allow"
