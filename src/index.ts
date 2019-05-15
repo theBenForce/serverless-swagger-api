@@ -61,7 +61,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
     const paths = lambdaPermissions[functionName];
 
     paths.forEach(path => {
-      resources[`${key}${functionName}${path.replace("/", "")}Permission`] = {
+      resources[`${key}${functionName}${path.replace(/\//g, "")}Permission`] = {
         Type: "AWS::Lambda::Permission",
         Properties: {
           FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
