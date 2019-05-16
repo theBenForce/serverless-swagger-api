@@ -1,6 +1,6 @@
 {
   "name": "serverless-swagger-api",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "dist/index.js",
   "repository": "github:theBenForce/serverless-swagger-api",
   "bugs": {
