@@ -19,6 +19,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "tsc"
+    "prepare": "tsc",
+    "postversion": "git push --follow-tags"
   }
 }
