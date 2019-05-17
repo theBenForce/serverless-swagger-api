@@ -26,7 +26,7 @@ function updateApiDefinitions(serverless: Serverless) {
 function createRestApi(serverless: Serverless, key: string, restApi: any) {
   const resources =
     serverless.service.provider.compiledCloudFormationTemplate.Resources;
-  const stage = serverless.service.provider.stage || restApi.Stage;
+  const stage = restApi.Stage || serverless.service.provider.stage;
   const service = serverless.service.getServiceName();
   const functionNames = [];
   const lambdaPermissions = {};
