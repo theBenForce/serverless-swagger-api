@@ -80,7 +80,10 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
   // Create api
   resources[key] = {
     Type: "AWS::ApiGateway::RestApi",
-    Properties: { ...restApi }
+    Properties: {
+      Name: restApi.Name,
+      Body: restApi.Body
+    }
   };
 
   resources[`${key}Stage`] = {
