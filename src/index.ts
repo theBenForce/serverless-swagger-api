@@ -26,7 +26,7 @@ function updateApiDefinitions(serverless: Serverless) {
 function createRestApi(serverless: Serverless, key: string, restApi: any) {
   const resources =
     serverless.service.provider.compiledCloudFormationTemplate.Resources;
-  const stage = serverless.service.provider.stage;
+  const stage = serverless.service.provider.stage || restApi.Stage;
   const service = serverless.service.getServiceName();
   const functionNames = [];
   const lambdaPermissions = {};
@@ -81,6 +81,14 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
   resources[key] = {
     Type: "AWS::ApiGateway::RestApi",
     Properties: { ...restApi }
+  };
+
+  resources[`${key}Stage`] = {
+    Type: "AWS::ApiGateway::Stage",
+    Properties: {
+      RestApiId: { "Fn::Sub": `\${${key}}` },
+      StageName: stage
+    }
   };
 
   resources[`${key}Deployment`] = {

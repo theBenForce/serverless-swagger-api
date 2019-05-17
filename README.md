@@ -34,4 +34,5 @@ custom:
     PrimaryApi:
       Name: ${self:provider.stage}-${self:service}-PrimaryApi
       Body: ${file(./some-swagger-file.yaml)}
+      Stage: dev
 ```
