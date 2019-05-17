@@ -86,16 +86,9 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
     }
   };
 
-  resources[`${key}Stage`] = {
-    Type: "AWS::ApiGateway::Stage",
-    Properties: {
-      RestApiId: { "Fn::Sub": `\${${key}}` },
-      StageName: stage
-    }
-  };
-
   resources[`${key}Deployment`] = {
     Type: "AWS::ApiGateway::Deployment",
+    DependsOn: [key],
     Properties: {
       RestApiId: { "Fn::Sub": `\${${key}}` },
       StageName: stage
