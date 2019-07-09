@@ -32,7 +32,14 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
   const lambdaPermissions = {};
 
   for (const path in restApi.Body.paths) {
-    const methods = restApi.Body.paths[path];
+    const methods = Object.keys(restApi.Body.paths[path]).reduce((acc, p) => {
+      if(["get", "post", "put", "patch", "delete", "head", "options"].includes(p)){
+          const value = restApi.Body.paths[path][p]
+          return {...acc, [p]: value}
+      } else {
+          return acc
+      }
+    }, {});
 
     for (const method in methods) {
       const methodProps = methods[method];
