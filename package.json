@@ -6,6 +6,14 @@
   "bugs": {
     "url": "https://github.com/theBenForce/serverless-swagger-api/issues"
   },
+  "keywords": [
+    "serverless",
+    "serverless-framework",
+    "swagger",
+    "aws",
+    "aws-apigateway",
+    "aws-api-gateway"
+  ],
   "license": "MIT",
   "author": {
     "name": "Ben Force",
