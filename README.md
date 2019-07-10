@@ -2,6 +2,7 @@ Serverless Swagger API
 ======================
 
 [![Build Status](https://travis-ci.org/theBenForce/serverless-swagger-api.svg?branch=master)](https://travis-ci.org/theBenForce/serverless-swagger-api) [![Maintainability](https://api.codeclimate.com/v1/badges/b9a5ee60a1ec6eba104d/maintainability)](https://codeclimate.com/github/theBenForce/serverless-swagger-api/maintainability) [![npm version](https://badge.fury.io/js/serverless-swagger-api.svg)](https://badge.fury.io/js/serverless-swagger-api)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FtheBenForce%2Fserverless-swagger-api.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FtheBenForce%2Fserverless-swagger-api?ref=badge_shield)
 
 This is a serverless plugin that simplifies the process of creating an AWS API Gateway from a swagger file.
 
@@ -38,3 +39,6 @@ custom:
       Body: ${file(./some-swagger-file.yaml)}
       Stage: dev
 ```
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FtheBenForce%2Fserverless-swagger-api.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FtheBenForce%2Fserverless-swagger-api?ref=badge_large)
