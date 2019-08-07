@@ -29,5 +29,8 @@
     "build": "tsc",
     "prepare": "tsc",
     "postversion": "git push --follow-tags"
+  },
+  "resolutions": {
+    "lodash": "^4.17.13"
   }
 }
