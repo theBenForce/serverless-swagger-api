@@ -2,9 +2,9 @@
   "name": "@drg_adaptive/serverless-swagger-api",
   "version": "1.0.16",
   "main": "dist/index.js",
-  "repository": "github:theBenForce/serverless-swagger-api",
+  "repository": "github:drg-adaptive/serverless-swagger-api",
   "bugs": {
-    "url": "https://github.com/theBenForce/serverless-swagger-api/issues"
+    "url": "https://github.com/drg-adaptive/serverless-swagger-api/issues"
   },
   "keywords": [
     "serverless",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "author": {
     "name": "Ben Force",
-    "email": "benforce@gmail.com"
+    "email": "bforce@teamdrg.com"
   },
   "devDependencies": {
     "@types/node": "^12.0.1",
