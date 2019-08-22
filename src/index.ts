@@ -23,6 +23,28 @@ function updateApiDefinitions(serverless: Serverless) {
   }
 }
 
+type MethodObject = {
+  [key: string]: any;
+};
+
+function filterMethods(methods: MethodObject): MethodObject {
+  const acceptableMethods = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options"
+  ];
+
+  return Object.keys(methods)
+    .filter(method => acceptableMethods.includes(method))
+    .reduce((acc, p) => {
+      return { ...acc, [p]: methods[p] };
+    }, {});
+}
+
 function createRestApi(serverless: Serverless, key: string, restApi: any) {
   const resources =
     serverless.service.provider.compiledCloudFormationTemplate.Resources;
@@ -32,16 +54,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
   const lambdaPermissions = {};
 
   for (const path in restApi.Body.paths) {
-    const methods = Object.keys(restApi.Body.paths[path]).reduce((acc, p) => {
-      if (
-        ["get", "post", "put", "patch", "delete", "head", "options"].includes(p)
-      ) {
-        const value = restApi.Body.paths[path][p];
-        return { ...acc, [p]: value };
-      } else {
-        return acc;
-      }
-    }, {});
+    const methods = filterMethods(restApi.Body.paths[path]);
 
     for (const method in methods) {
       const methodProps = methods[method];
@@ -72,39 +85,56 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
     paths.forEach(path => {
       resources[
         `${key}${functionName}${path.replace(/[^A-Za-z0-9]/g, "")}Permission`
-      ] = {
-        Type: "AWS::Lambda::Permission",
-        Properties: {
-          FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
-          Action: "lambda:InvokeFunction",
-          Principal: { "Fn::Sub": "apigateway.${AWS::URLSuffix}" },
-          SourceArn: {
-            "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${path}`
-          }
-        }
-      };
+      ] = createLambdaInvokePermission(functionName, key, path);
     });
   });
 
   // Create api
-  resources[key] = {
-    Type: "AWS::ApiGateway::RestApi",
+  createApiResources(resources, key, restApi, stage, service, functionNames);
+}
+function createLambdaInvokePermission(
+  functionName: any,
+  key: string,
+  path: any
+): any {
+  return {
+    Type: "AWS::Lambda::Permission",
     Properties: {
-      Name: restApi.Name,
-      Body: restApi.Body
+      FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
+      Action: "lambda:InvokeFunction",
+      Principal: { "Fn::Sub": "apigateway.${AWS::URLSuffix}" },
+      SourceArn: {
+        "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${path}`
+      }
     }
   };
+}
 
-  resources[`${key}Deployment`] = {
-    Type: "AWS::ApiGateway::Deployment",
-    DependsOn: [key],
-    Properties: {
-      RestApiId: { Ref: key },
-      StageName: stage
-    }
-  };
+function createApiResources(
+  resources: any[],
+  key: string,
+  restApi: any,
+  stage: any,
+  service: string,
+  functionNames: any[]
+) {
+  resources[key] = createApi(restApi);
+  resources[`${key}Deployment`] = createDeployment(key, stage);
+  resources[`${key}ServiceRole`] = createServiceRole(
+    stage,
+    service,
+    key,
+    functionNames
+  );
+}
 
-  resources[`${key}ServiceRole`] = {
+function createServiceRole(
+  stage: any,
+  service: string,
+  key: string,
+  functionNames: any[]
+): any {
+  return {
     Type: "AWS::IAM::Role",
     Properties: {
       RoleName: `${stage}-${service}-${key}-APIRole`,
@@ -121,18 +151,48 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
         ]
       },
       Policies: [
-        {
-          PolicyName: `${stage}-${service}-${key}-APIPolicy`,
-          PolicyDocument: {
-            Version: "2012-10-17",
-            Statement: functionNames.map(functionName => ({
-              Action: "lambda:InvokeFunction",
-              Resource: { "Fn::Sub": `\${${functionName}.Arn}` },
-              Effect: "Allow"
-            }))
-          }
-        }
+        createLambdaExecutionPolicy(stage, service, key, functionNames)
       ]
+    }
+  };
+}
+
+function createLambdaExecutionPolicy(
+  stage: any,
+  service: string,
+  key: string,
+  functionNames: any[]
+) {
+  return {
+    PolicyName: `${stage}-${service}-${key}-APIPolicy`,
+    PolicyDocument: {
+      Version: "2012-10-17",
+      Statement: functionNames.map(functionName => ({
+        Action: "lambda:InvokeFunction",
+        Resource: { "Fn::Sub": `\${${functionName}.Arn}` },
+        Effect: "Allow"
+      }))
+    }
+  };
+}
+
+function createDeployment(key: string, stage: any): any {
+  return {
+    Type: "AWS::ApiGateway::Deployment",
+    DependsOn: [key],
+    Properties: {
+      RestApiId: { Ref: key },
+      StageName: stage
+    }
+  };
+}
+
+function createApi(restApi: any): any {
+  return {
+    Type: "AWS::ApiGateway::RestApi",
+    Properties: {
+      Name: restApi.Name,
+      Body: restApi.Body
     }
   };
 }
