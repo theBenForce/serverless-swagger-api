@@ -1,5 +1,5 @@
 {
-  "name": "@drg_adaptive/serverless-swagger-api",
+  "name": "serverless-swagger-api",
   "version": "1.0.17",
   "main": "dist/index.js",
   "repository": "github:drg-adaptive/serverless-swagger-api",
