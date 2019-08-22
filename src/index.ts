@@ -33,11 +33,13 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
 
   for (const path in restApi.Body.paths) {
     const methods = Object.keys(restApi.Body.paths[path]).reduce((acc, p) => {
-      if(["get", "post", "put", "patch", "delete", "head", "options"].includes(p)){
-          const value = restApi.Body.paths[path][p]
-          return {...acc, [p]: value}
+      if (
+        ["get", "post", "put", "patch", "delete", "head", "options"].includes(p)
+      ) {
+        const value = restApi.Body.paths[path][p];
+        return { ...acc, [p]: value };
       } else {
-          return acc
+        return acc;
       }
     }, {});
 
@@ -97,7 +99,7 @@ function createRestApi(serverless: Serverless, key: string, restApi: any) {
     Type: "AWS::ApiGateway::Deployment",
     DependsOn: [key],
     Properties: {
-      RestApiId: { "Fn::Sub": `\${${key}}` },
+      RestApiId: { Ref: key },
       StageName: stage
     }
   };
