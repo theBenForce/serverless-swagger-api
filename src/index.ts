@@ -1,198 +1,280 @@
 import * as Serverless from "serverless";
-
-export default class SwaggerApiPlugin {
-  hooks: { [key: string]: any };
-  name: string;
-
-  constructor(serverless: Serverless, options: any) {
-    this.name = "serverless-swagger-api";
-
-    this.hooks = {
-      "before:package:finalize": () => updateApiDefinitions(serverless)
-    };
-  }
-}
-
-module.exports = SwaggerApiPlugin;
-
-function updateApiDefinitions(serverless: Serverless) {
-  const apis = serverless.service.custom.swaggerApi;
-  for (const key in apis) {
-    const api = apis[key];
-    createRestApi(serverless, key, api);
-  }
-}
+import Plugin = require("serverless/classes/Plugin");
+import { writeFileSync } from "fs";
+import { join } from "path";
+import * as AWS from "aws-sdk";
 
 type MethodObject = {
   [key: string]: any;
 };
 
-function filterMethods(methods: MethodObject): MethodObject {
-  const acceptableMethods = [
-    "get",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "head",
-    "options"
-  ];
+export default class SwaggerApiPlugin implements Plugin {
+  readonly hooks: { [key: string]: any };
+  readonly commands: {
+    [key: string]: { usage: string; lifecycleEvents: Array<string> };
+  };
+  readonly name: string;
 
-  return Object.keys(methods)
-    .filter(method => acceptableMethods.includes(method))
-    .reduce((acc, p) => {
-      return { ...acc, [p]: methods[p] };
-    }, {});
-}
+  constructor(private serverless: Serverless, options: any) {
+    this.name = "serverless-swagger-api";
 
-function createRestApi(serverless: Serverless, key: string, restApi: any) {
-  const resources =
-    serverless.service.provider.compiledCloudFormationTemplate.Resources;
-  const stage = restApi.Stage || serverless.service.provider.stage;
-  const service = serverless.service.getServiceName();
-  const functionNames = [];
-  const lambdaPermissions = {};
+    this.hooks = {
+      "before:package:finalize": this.updateApiDefinitions(),
+      "after:deploy": () => this.updateApiDeployments(),
+      "updateDeployments:update": () => this.updateApiDeployments()
+    };
 
-  for (const path in restApi.Body.paths) {
-    const methods = filterMethods(restApi.Body.paths[path]);
-
-    for (const method in methods) {
-      const methodProps = methods[method];
-      const functionName = methodProps["x-lambda-name"];
-      functionNames.push(functionName);
-
-      methodProps["x-amazon-apigateway-integration"] = {
-        uri: {
-          "Fn::Sub": `arn:aws:apigateway:\${AWS::Region}:lambda:path/2015-03-31/functions/\${${functionName}.Arn}/invocations`
-        },
-        passthroughBehavior: "when_no_match",
-        httpMethod: "POST",
-        type: "aws_proxy",
-        responses: {}
-      };
-
-      if (!lambdaPermissions[functionName]) {
-        lambdaPermissions[functionName] = [];
+    this.commands = {
+      updateDeployments: {
+        usage: `Update API Gateway deployments defined with ${this.name}`,
+        lifecycleEvents: ["update"]
       }
+    };
+  }
 
-      lambdaPermissions[functionName].push(`${method.toUpperCase()}${path}`);
+  get stackName() {
+    return [
+      this.serverless.service.getServiceName(),
+      this.serverless.getProvider("aws").getStage()
+    ].join("-");
+  }
+
+  private async updateApiDeployments() {
+    const aws = this.serverless.getProvider("aws");
+    const region = aws.getRegion();
+
+    const cloudFormation = new AWS.CloudFormation({
+      region,
+      apiVersion: "2010-05-15"
+    });
+
+    const apigateway = new AWS.APIGateway({
+      region,
+      apiVersion: "2015-07-09"
+    });
+
+    const stack = await cloudFormation
+      .describeStackResources({ StackName: this.stackName })
+      .promise();
+
+    const apis = this.serverless.service.custom.swaggerApi;
+    for (const key in apis) {
+      const restApi = apis[key];
+      const stageName = restApi.Stage || this.serverless.service.provider.stage;
+
+      const apiResource = stack.StackResources.find(
+        x => x.LogicalResourceId === key
+      );
+      const restApiId = apiResource.PhysicalResourceId;
+
+      this.serverless.cli.log(
+        `Creating new deployment for ${restApiId} api stage ${stageName}...`
+      );
+      await apigateway
+        .createDeployment({
+          restApiId,
+          stageName,
+          description: `${this.name} auto-deployment`
+        })
+        .promise();
     }
   }
 
-  functionNames.forEach(functionName => {
-    const paths = lambdaPermissions[functionName];
+  private updateApiDefinitions() {
+    return (() => {
+      const apis = this.serverless.service.custom.swaggerApi;
+      for (const key in apis) {
+        this.serverless.cli.log(`Creating ${key} api`);
+        const api = apis[key];
+        this.createRestApi(key, api);
+      }
+    }).bind(this);
+  }
 
-    paths.forEach(path => {
-      resources[
-        `${key}${functionName}${path.replace(/[^A-Za-z0-9]/g, "")}Permission`
-      ] = createLambdaInvokePermission(functionName, key, path);
-    });
-  });
+  private filterMethods(methods: MethodObject): MethodObject {
+    const acceptableMethods = [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete",
+      "head",
+      "options"
+    ];
 
-  // Create api
-  createApiResources(resources, key, restApi, stage, service, functionNames);
-}
-function createLambdaInvokePermission(
-  functionName: any,
-  key: string,
-  path: any
-): any {
-  return {
-    Type: "AWS::Lambda::Permission",
-    Properties: {
-      FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
-      Action: "lambda:InvokeFunction",
-      Principal: { "Fn::Sub": "apigateway.${AWS::URLSuffix}" },
-      SourceArn: {
-        "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${path}`
+    return Object.keys(methods)
+      .filter(method => acceptableMethods.includes(method))
+      .reduce((acc, p) => {
+        return { ...acc, [p]: methods[p] };
+      }, {});
+  }
+
+  private createRestApi(key: string, restApi: any) {
+    const resources = this.serverless.service.provider
+      .compiledCloudFormationTemplate.Resources;
+    const stage = restApi.Stage || this.serverless.service.provider.stage;
+    const service = this.serverless.service.getServiceName();
+    const functionNames = [];
+    const lambdaPermissions = {};
+
+    for (const path in restApi.Body.paths) {
+      this.serverless.cli.log(`Connecting lambda for ${path} on ${key}`);
+      const methods = this.filterMethods(restApi.Body.paths[path]);
+
+      for (const method in methods) {
+        const methodProps = methods[method];
+        const functionName = methodProps["x-lambda-name"];
+        functionNames.push(functionName);
+
+        methodProps["x-amazon-apigateway-integration"] = {
+          uri: {
+            "Fn::Sub": `arn:aws:apigateway:\${AWS::Region}:lambda:path/2015-03-31/functions/\${${functionName}.Arn}/invocations`
+          },
+          passthroughBehavior: "when_no_match",
+          httpMethod: "POST",
+          type: "aws_proxy",
+          responses: {}
+        };
+
+        if (!lambdaPermissions[functionName]) {
+          lambdaPermissions[functionName] = [];
+        }
+
+        lambdaPermissions[functionName].push(`${method.toUpperCase()}${path}`);
       }
     }
-  };
-}
 
-function createApiResources(
-  resources: any[],
-  key: string,
-  restApi: any,
-  stage: any,
-  service: string,
-  functionNames: any[]
-) {
-  resources[key] = createApi(restApi);
-  resources[`${key}Deployment`] = createDeployment(key, stage);
-  resources[`${key}ServiceRole`] = createServiceRole(
-    stage,
-    service,
-    key,
-    functionNames
-  );
-}
+    functionNames.forEach(functionName => {
+      const paths = lambdaPermissions[functionName];
 
-function createServiceRole(
-  stage: any,
-  service: string,
-  key: string,
-  functionNames: any[]
-): any {
-  return {
-    Type: "AWS::IAM::Role",
-    Properties: {
-      RoleName: `${stage}-${service}-${key}-APIRole`,
-      AssumeRolePolicyDocument: {
-        Version: "2012-10-17",
-        Statement: [
-          {
-            Effect: "Allow",
-            Principal: {
-              Service: "apigateway.amazonaws.com"
-            },
-            Action: "sts:AssumeRole"
-          }
-        ]
-      },
-      Policies: [
-        createLambdaExecutionPolicy(stage, service, key, functionNames)
-      ]
-    }
-  };
-}
+      paths.forEach(path => {
+        resources[
+          `${key}${functionName}${path.replace(/[^A-Za-z0-9]/g, "")}Permission`
+        ] = this.createLambdaInvokePermission(functionName, key, path);
+      });
+    });
 
-function createLambdaExecutionPolicy(
-  stage: any,
-  service: string,
-  key: string,
-  functionNames: any[]
-) {
-  return {
-    PolicyName: `${stage}-${service}-${key}-APIPolicy`,
-    PolicyDocument: {
-      Version: "2012-10-17",
-      Statement: functionNames.map(functionName => ({
+    // Create api
+    this.createApiResources(
+      resources,
+      key,
+      restApi,
+      stage,
+      service,
+      functionNames
+    );
+  }
+  private createLambdaInvokePermission(
+    functionName: any,
+    key: string,
+    path: any
+  ): any {
+    return {
+      Type: "AWS::Lambda::Permission",
+      Properties: {
+        FunctionName: { "Fn::Sub": `\${${functionName}.Arn}` },
         Action: "lambda:InvokeFunction",
-        Resource: { "Fn::Sub": `\${${functionName}.Arn}` },
-        Effect: "Allow"
-      }))
-    }
-  };
+        Principal: { "Fn::Sub": "apigateway.${AWS::URLSuffix}" },
+        SourceArn: {
+          "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${path}`
+        }
+      }
+    };
+  }
+
+  private createApiDeploymentName(key: string) {
+    return `${key}Deployment`;
+  }
+
+  private createApiResources(
+    resources: any[],
+    key: string,
+    restApi: any,
+    stage: any,
+    service: string,
+    functionNames: any[]
+  ) {
+    resources[key] = this.createApi(restApi);
+    resources[this.createApiDeploymentName(key)] = this.createDeployment(
+      key,
+      stage
+    );
+    resources[`${key}ServiceRole`] = this.createServiceRole(
+      stage,
+      service,
+      key,
+      functionNames
+    );
+  }
+
+  private createServiceRole(
+    stage: any,
+    service: string,
+    key: string,
+    functionNames: any[]
+  ): any {
+    return {
+      Type: "AWS::IAM::Role",
+      Properties: {
+        RoleName: `${stage}-${service}-${key}-APIRole`,
+        AssumeRolePolicyDocument: {
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Effect: "Allow",
+              Principal: {
+                Service: "apigateway.amazonaws.com"
+              },
+              Action: "sts:AssumeRole"
+            }
+          ]
+        },
+        Policies: [
+          this.createLambdaExecutionPolicy(stage, service, key, functionNames)
+        ]
+      }
+    };
+  }
+
+  private createLambdaExecutionPolicy(
+    stage: any,
+    service: string,
+    key: string,
+    functionNames: any[]
+  ) {
+    return {
+      PolicyName: `${stage}-${service}-${key}-APIPolicy`,
+      PolicyDocument: {
+        Version: "2012-10-17",
+        Statement: functionNames.map(functionName => ({
+          Action: "lambda:InvokeFunction",
+          Resource: { "Fn::Sub": `\${${functionName}.Arn}` },
+          Effect: "Allow"
+        }))
+      }
+    };
+  }
+
+  private createDeployment(key: string, stage: any): any {
+    return {
+      Type: "AWS::ApiGateway::Deployment",
+      DependsOn: [key],
+      Properties: {
+        RestApiId: { Ref: key },
+        StageName: stage
+      }
+    };
+  }
+
+  private createApi(restApi: any): any {
+    return {
+      Type: "AWS::ApiGateway::RestApi",
+      Properties: {
+        Name: restApi.Name,
+        Body: restApi.Body
+      }
+    };
+  }
 }
 
-function createDeployment(key: string, stage: any): any {
-  return {
-    Type: "AWS::ApiGateway::Deployment",
-    DependsOn: [key],
-    Properties: {
-      RestApiId: { Ref: key },
-      StageName: stage
-    }
-  };
-}
-
-function createApi(restApi: any): any {
-  return {
-    Type: "AWS::ApiGateway::RestApi",
-    Properties: {
-      Name: restApi.Name,
-      Body: restApi.Body
-    }
-  };
-}
+module.exports = SwaggerApiPlugin;
