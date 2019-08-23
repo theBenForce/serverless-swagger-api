@@ -11,11 +11,15 @@ type MethodObject = {
 export default class SwaggerApiPlugin implements Plugin {
   readonly hooks: { [key: string]: any };
   readonly commands: {
-    [key: string]: { usage: string; lifecycleEvents: Array<string> };
+    [key: string]: {
+      usage: string;
+      lifecycleEvents: Array<string>;
+      options: any;
+    };
   };
   readonly name: string;
 
-  constructor(private serverless: Serverless, options: any) {
+  constructor(private serverless: Serverless, private options: any) {
     this.name = "serverless-swagger-api";
 
     this.hooks = {
@@ -27,7 +31,13 @@ export default class SwaggerApiPlugin implements Plugin {
     this.commands = {
       updateDeployments: {
         usage: `Update API Gateway deployments defined with ${this.name}`,
-        lifecycleEvents: ["update"]
+        lifecycleEvents: ["update"],
+        options: {
+          message: {
+            usage: "Specify the message attached to this deployment",
+            required: false
+          }
+        }
       }
     };
   }
@@ -74,7 +84,7 @@ export default class SwaggerApiPlugin implements Plugin {
         .createDeployment({
           restApiId,
           stageName,
-          description: `${this.name} auto-deployment`
+          description: this.options.message || `${this.name} auto-deployment`
         })
         .promise();
     }
