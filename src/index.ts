@@ -69,24 +69,29 @@ export default class SwaggerApiPlugin implements Plugin {
 
     const apis = this.serverless.service.custom.swaggerApi;
     for (const key in apis) {
-      const restApi = apis[key];
-      const stageName = restApi.Stage || this.serverless.service.provider.stage;
+      try {
+        const restApi = apis[key];
+        const stageName =
+          restApi.Stage || this.serverless.service.provider.stage;
 
-      const apiResource = stack.StackResources.find(
-        x => x.LogicalResourceId === key
-      );
-      const restApiId = apiResource.PhysicalResourceId;
+        const apiResource = stack.StackResources.find(
+          x => x.LogicalResourceId === key
+        );
+        const restApiId = apiResource.PhysicalResourceId;
 
-      this.serverless.cli.log(
-        `Creating new deployment for ${restApiId} api stage ${stageName}...`
-      );
-      await apigateway
-        .createDeployment({
-          restApiId,
-          stageName,
-          description: this.options.message || `${this.name} auto-deployment`
-        })
-        .promise();
+        this.serverless.cli.log(
+          `Creating new deployment for ${restApiId} api stage ${stageName}...`
+        );
+        await apigateway
+          .createDeployment({
+            restApiId,
+            stageName,
+            description: this.options.message || `${this.name} auto-deployment`
+          })
+          .promise();
+      } catch (ex) {
+        this.serverless.cli.log(`Could not update API: ${key}`);
+      }
     }
   }
 
