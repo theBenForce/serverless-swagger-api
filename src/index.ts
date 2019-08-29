@@ -4,9 +4,27 @@ import { writeFileSync } from "fs";
 import { join } from "path";
 import * as AWS from "aws-sdk";
 
+const hash = require("string-hash");
+
 type MethodObject = {
   [key: string]: any;
 };
+
+const MAX_NAME_LENGTH = 64;
+
+function clipString(value: string, postfix: string): string {
+  const maxLength = MAX_NAME_LENGTH - 1 - postfix.length;
+  if (value.length > maxLength) {
+    value = [
+      value.substr(0, maxLength - 9),
+      hash(value)
+        .toString(16)
+        .toUpperCase()
+    ].join("-");
+  }
+
+  return [value, postfix].join("-");
+}
 
 export default class SwaggerApiPlugin implements Plugin {
   readonly hooks: { [key: string]: any };
@@ -231,7 +249,7 @@ export default class SwaggerApiPlugin implements Plugin {
     return {
       Type: "AWS::IAM::Role",
       Properties: {
-        RoleName: `${stage}-${service}-${key}-APIRole`,
+        RoleName: clipString(`${stage}${service}${key}`, "APIRole"),
         AssumeRolePolicyDocument: {
           Version: "2012-10-17",
           Statement: [
@@ -258,7 +276,7 @@ export default class SwaggerApiPlugin implements Plugin {
     functionNames: any[]
   ) {
     return {
-      PolicyName: `${stage}-${service}-${key}-APIPolicy`,
+      PolicyName: clipString(`${stage}-${service}-${key}`, `APIPolicy`),
       PolicyDocument: {
         Version: "2012-10-17",
         Statement: functionNames.map(functionName => ({

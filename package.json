@@ -40,5 +40,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "string-hash": "^1.1.3"
   }
 }
