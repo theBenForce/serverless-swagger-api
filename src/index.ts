@@ -228,12 +228,13 @@ export default class SwaggerApiPlugin implements Plugin {
     );
   }
   private createLambdaInvokePermission(
-    functionName: any,
+    functionName: string,
     key: string,
-    path: any
+    path: string
   ): any {
+    const fullPath = `\${${key}}/*/${path}`;
     this.serverless.cli.log(
-      `Creating Lambda Invoke Permission for ${functionName}`
+      `Creating Lambda Invoke Permission for ${functionName} at ${fullPath}`
     );
 
     return {
@@ -243,7 +244,7 @@ export default class SwaggerApiPlugin implements Plugin {
         Action: "lambda:InvokeFunction",
         Principal: { "Fn::Sub": "apigateway.${AWS::URLSuffix}" },
         SourceArn: {
-          "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:\${${key}}/*/${path}`
+          "Fn::Sub": `arn:aws:execute-api:\${AWS::Region}:\${AWS::AccountId}:${fullPath}`
         }
       }
     };
