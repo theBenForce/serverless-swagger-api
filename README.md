@@ -1,6 +1,6 @@
 # Serverless Swagger API
 
-[![Build Status](https://travis-ci.org/drg-adaptive/serverless-swagger-api.svg?branch=master)](https://travis-ci.org/drg-adaptive/serverless-swagger-api)
+[![Build Status](https://travis-ci.org/drg-adaptive/serverless-swagger-api.svg)](https://travis-ci.org/drg-adaptive/serverless-swagger-api)
 [![Maintainability](https://api.codeclimate.com/v1/badges/006339522a8624e9bacb/maintainability)](https://codeclimate.com/github/drg-adaptive/serverless-swagger-api/maintainability)
 [![npm version](https://badge.fury.io/js/serverless-swagger-api.svg)](https://badge.fury.io/js/serverless-swagger-api)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdrg-adaptive%2Fserverless-swagger-api.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdrg-adaptive%2Fserverless-swagger-api?ref=badge_shield)
