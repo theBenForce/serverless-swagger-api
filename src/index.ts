@@ -232,6 +232,10 @@ export default class SwaggerApiPlugin implements Plugin {
     key: string,
     path: any
   ): any {
+    this.serverless.cli.log(
+      `Creating Lambda Invoke Permission for ${functionName}`
+    );
+
     return {
       Type: "AWS::Lambda::Permission",
       Properties: {
@@ -257,6 +261,8 @@ export default class SwaggerApiPlugin implements Plugin {
     service: string,
     functionNames: any[]
   ) {
+    this.serverless.cli.log(`Creating API Resource ${key}`);
+
     resources[key] = this.createApi(restApi);
     resources[this.createApiDeploymentName(key)] = this.createDeployment(
       key,
@@ -276,6 +282,8 @@ export default class SwaggerApiPlugin implements Plugin {
     key: string,
     functionNames: any[]
   ): any {
+    this.serverless.cli.log(`Creating service role for ${key}`);
+
     return {
       Type: "AWS::IAM::Role",
       Properties: {
@@ -305,6 +313,8 @@ export default class SwaggerApiPlugin implements Plugin {
     key: string,
     functionNames: any[]
   ) {
+    this.serverless.cli.log(`Creating lambda execution policy for ${key}`);
+
     return {
       PolicyName: clipString(`${stage}-${service}-${key}`, `APIPolicy`),
       PolicyDocument: {
@@ -319,6 +329,8 @@ export default class SwaggerApiPlugin implements Plugin {
   }
 
   private createDeployment(key: string, stage: any): any {
+    this.serverless.cli.log(`Creating API Deployment for ${key}`);
+
     return {
       Type: "AWS::ApiGateway::Deployment",
       DependsOn: [key],
@@ -330,6 +342,8 @@ export default class SwaggerApiPlugin implements Plugin {
   }
 
   private createApi(restApi: any): any {
+    this.serverless.cli.log(`Creating RestApi ${restApi.Name}`);
+
     return {
       Type: "AWS::ApiGateway::RestApi",
       Properties: {
