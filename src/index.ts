@@ -146,7 +146,7 @@ export default class SwaggerApiPlugin implements Plugin {
   private updateApiDefinitions() {
     return (() => {
       const apis = this.stackApis;
-      for (const key in Object.keys(apis)) {
+      for (const key of Object.keys(apis)) {
         this.serverless.cli.log(`Creating ${key} api`);
         const api = apis[key];
         this.createRestApi(key, api);
