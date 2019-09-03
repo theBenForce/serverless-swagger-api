@@ -10,6 +10,18 @@ type MethodObject = {
   [key: string]: any;
 };
 
+interface APIDefinition {
+  Name: string;
+  Body: any;
+  Stage: string;
+}
+
+interface PluginOptions {
+  apis: { [key: string]: APIDefinition };
+  updateDeployments?: boolean;
+  usePackageVersion?: boolean;
+}
+
 const MAX_NAME_LENGTH = 64;
 
 function clipString(value: string, postfix: string): string {
@@ -67,9 +79,22 @@ export default class SwaggerApiPlugin implements Plugin {
     ].join("-");
   }
 
+  get pluginOptions(): PluginOptions {
+    return this.serverless.service.custom.swaggerApi || {};
+  }
+
+  get stackApis(): { [key: string]: APIDefinition } {
+    return this.pluginOptions.apis || {};
+  }
+
   private async updateApiDeployments() {
     const aws = this.serverless.getProvider("aws");
     const region = aws.getRegion();
+    const options = this.pluginOptions;
+
+    if (options.updateDeployments === false) {
+      return;
+    }
 
     const cloudFormation = new AWS.CloudFormation({
       region,
@@ -85,10 +110,15 @@ export default class SwaggerApiPlugin implements Plugin {
       .describeStackResources({ StackName: this.stackName })
       .promise();
 
-    const apis = this.serverless.service.custom.swaggerApi;
+    const apis = this.stackApis;
     for (const key in apis) {
       try {
         const restApi = apis[key];
+
+        if (options.usePackageVersion) {
+          const { version } = require("./package.json");
+          restApi.Body.info.version = version;
+        }
         const stageName =
           restApi.Stage || this.serverless.service.provider.stage;
 
@@ -115,8 +145,8 @@ export default class SwaggerApiPlugin implements Plugin {
 
   private updateApiDefinitions() {
     return (() => {
-      const apis = this.serverless.service.custom.swaggerApi;
-      for (const key in apis) {
+      const apis = this.stackApis;
+      for (const key in Object.keys(apis)) {
         this.serverless.cli.log(`Creating ${key} api`);
         const api = apis[key];
         this.createRestApi(key, api);
@@ -142,7 +172,7 @@ export default class SwaggerApiPlugin implements Plugin {
       }, {});
   }
 
-  private createRestApi(key: string, restApi: any) {
+  private createRestApi(key: string, restApi: APIDefinition) {
     const resources = this.serverless.service.provider
       .compiledCloudFormationTemplate.Resources;
     const stage = restApi.Stage || this.serverless.service.provider.stage;

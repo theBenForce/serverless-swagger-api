@@ -33,15 +33,27 @@ paths:
 
 ### Plugin Settings
 
-Now you need to tell the swagger api plugin about your configuration file. Add a `swaggerApi` property to the custom section of your serverless configuration. You can add as many apis as you want by adding children to the `swaggerApi` property.
+Now you need to tell the swagger api plugin about your configuration file. Add a `swaggerApi` property to the custom section of your serverless configuration. You can add as many apis as you want by adding children to the `swaggerApi.apis` property.
+
+#### updateDeployments
+Will automatically update API gateway deployments if not set to `false`.
+
+#### usePackageVersion
+The `info.version` value in your OpenAPI file will be overwritten with the version in `package.json`.
+
+#### apis
+An object containing all of the APIs to be defined in this stack.
 
 ```yaml
 custom:
   swaggerApi:
-    PrimaryApi:
-      Name: ${self:provider.stage}-${self:service}-PrimaryApi
-      Body: ${file(./some-swagger-file.yaml)}
-      Stage: dev
+    updateDeployments: true
+    usePackageVersion: true
+    apis:
+      PrimaryApi:
+        Name: ${self:provider.stage}-${self:service}-PrimaryApi
+        Body: ${file(./some-swagger-file.yaml)}
+        Stage: dev
 ```
 
 ## License
