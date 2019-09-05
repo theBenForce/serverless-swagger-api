@@ -1,7 +1,6 @@
 import * as Serverless from "serverless";
 import Plugin = require("serverless/classes/Plugin");
-import { writeFileSync } from "fs";
-import { join } from "path";
+import * as path from "path";
 import * as AWS from "aws-sdk";
 
 const hash = require("string-hash");
@@ -116,7 +115,9 @@ export default class SwaggerApiPlugin implements Plugin {
         const restApi = apis[key];
 
         if (options.usePackageVersion) {
-          const { version } = require("./package.json");
+          const packageLocation = path.resolve("./package.json");
+          this.serverless.cli.log(`Loading version from ${packageLocation}`);
+          const { version } = require(packageLocation);
           restApi.Body.info.version = version;
         }
         const stageName =
