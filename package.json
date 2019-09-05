@@ -1,6 +1,6 @@
 {
   "name": "serverless-swagger-api",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "main": "dist/index.js",
   "repository": "github:drg-adaptive/serverless-swagger-api",
   "bugs": {
