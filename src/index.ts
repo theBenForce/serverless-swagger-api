@@ -111,7 +111,7 @@ export default class SwaggerApiPlugin implements Plugin {
       .promise();
 
     const apis = this.stackApis;
-    for (const key in apis) {
+    for (const key of Object.keys(apis)) {
       try {
         const restApi = apis[key];
 
@@ -139,6 +139,7 @@ export default class SwaggerApiPlugin implements Plugin {
           .promise();
       } catch (ex) {
         this.serverless.cli.log(`Could not update API: ${key}`);
+        this.serverless.cli.log(ex.message);
       }
     }
   }
