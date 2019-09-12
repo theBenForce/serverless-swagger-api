@@ -41,7 +41,8 @@
     "semantic-release": "semantic-release"
   },
   "resolutions": {
-    "lodash": "^4.17.13"
+    "lodash": "^4.17.13",
+    "mem": "^4.0.0"
   },
   "config": {
     "commitizen": {
