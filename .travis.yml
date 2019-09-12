@@ -3,8 +3,6 @@ node_js: "11"
 
 cache: yarn
 
-install: yarn install
-
 jobs:
   include:
     # Define the release stage that runs semantic-release
