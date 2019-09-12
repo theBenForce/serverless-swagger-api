@@ -1,6 +1,6 @@
 {
   "name": "serverless-swagger-api",
-  "version": "1.2.6",
+  "version": "0.0.0-development",
   "main": "dist/index.js",
   "repository": "github:drg-adaptive/serverless-swagger-api",
   "bugs": {
@@ -20,18 +20,25 @@
     "email": "bforce@teamdrg.com"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^3.0.4",
+    "@semantic-release/commit-analyzer": "^6.3.0",
+    "@semantic-release/github": "^5.4.3",
+    "@semantic-release/npm": "^5.1.15",
+    "@semantic-release/release-notes-generator": "^7.3.0",
     "@types/node": "^12.0.1",
     "@types/serverless": "^1.18.2",
     "aws-sdk": "^2.516.0",
     "commitizen": "^4.0.3",
     "cz-conventional-changelog": "3.0.2",
+    "semantic-release": "^15.13.24",
     "serverless": "^1.42.2",
     "typescript": "^3.4.5"
   },
   "scripts": {
     "build": "tsc",
     "prepare": "tsc",
-    "postversion": "git push --follow-tags"
+    "postversion": "git push --follow-tags",
+    "semantic-release": "semantic-release"
   },
   "resolutions": {
     "lodash": "^4.17.13"
