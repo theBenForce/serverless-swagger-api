@@ -37,7 +37,6 @@
   "scripts": {
     "build": "tsc",
     "prepare": "tsc",
-    "postversion": "git push --follow-tags",
     "semantic-release": "semantic-release",
     "test": "echo \"TODO: Write some 🐞 tests...\""
   },
