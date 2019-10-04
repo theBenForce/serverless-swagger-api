@@ -189,6 +189,14 @@ export default class SwaggerApiPlugin implements Plugin {
       for (const method in methods) {
         const methodProps = methods[method];
         const functionName = methodProps["x-lambda-name"];
+
+        if (!functionName) {
+          this.serverless.cli.log(
+            `No functionName defined for ${method} ${path}`
+          );
+          continue;
+        }
+
         functionNames.push(functionName);
 
         methodProps["x-amazon-apigateway-integration"] = {
