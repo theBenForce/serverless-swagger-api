@@ -13,6 +13,7 @@ interface APIDefinition {
   Name: string;
   Body: any;
   Stage: string;
+  Lambda?: string;
 }
 
 interface PluginOptions {
@@ -188,6 +189,11 @@ export default class SwaggerApiPlugin implements Plugin {
 
       for (const method in methods) {
         const methodProps = methods[method];
+
+        if (!methodProps["x-lambda-name"] && restApi.Lambda) {
+          methodProps["x-lambda-name"] = restApi.Lambda;
+        }
+
         const functionName = methodProps["x-lambda-name"];
 
         if (!functionName) {
@@ -197,7 +203,9 @@ export default class SwaggerApiPlugin implements Plugin {
           continue;
         }
 
-        functionNames.push(functionName);
+        if (!functionNames.some(name => name === functionName)) {
+          functionNames.push(functionName);
+        }
 
         methodProps["x-amazon-apigateway-integration"] = {
           uri: {
