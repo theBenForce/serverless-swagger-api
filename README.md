@@ -53,8 +53,19 @@ custom:
       PrimaryApi:
         Name: ${self:provider.stage}-${self:service}-PrimaryApi
         Body: ${file(./some-swagger-file.yaml)}
+        Lambda: ExampleLambdaFunction
         Stage: dev
 ```
+
+##### Properties
+Each API object has the following properties
+
+| Name | Required | Description |
+| --- | --- | --- |
+| Name | Yes | Name of the API that will be used as the `Name` parameter when creating the `AWS::ApiGateway::RestApi` CloudFormation object |
+| Body | Yes | The swagger/openapi file that defines the API |
+| Stage | Yes | The name of the API Gateway stage that will be created |
+| Lambda | No | Default lambda name that will be used if `x-lambda-name` isn't provided on a path |
 
 ## License
 
