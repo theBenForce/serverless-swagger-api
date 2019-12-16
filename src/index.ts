@@ -38,6 +38,10 @@ function clipString(value: string, postfix: string): string {
   return [value, postfix].join("-");
 }
 
+type KeyedObject = {
+  [key: string]: any;
+};
+
 export default class SwaggerApiPlugin implements Plugin {
   readonly hooks: { [key: string]: any };
   readonly commands: {
@@ -190,7 +194,11 @@ export default class SwaggerApiPlugin implements Plugin {
       for (const method in methods) {
         const methodProps = methods[method];
 
-        if (!methodProps["x-lambda-name"] && restApi.Lambda) {
+        if (
+          !methodProps["x-lambda-name"] &&
+          !methodProps["x-amazon-apigateway-integration"] &&
+          restApi.Lambda
+        ) {
           methodProps["x-lambda-name"] = restApi.Lambda;
         }
 
@@ -273,7 +281,7 @@ export default class SwaggerApiPlugin implements Plugin {
   }
 
   private createApiResources(
-    resources: any[],
+    resources: KeyedObject,
     key: string,
     restApi: any,
     stage: any,

@@ -20,18 +20,18 @@
     "email": "bforce@teamdrg.com"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^3.0.4",
-    "@semantic-release/commit-analyzer": "^6.3.0",
-    "@semantic-release/github": "^5.4.3",
-    "@semantic-release/npm": "^5.1.15",
-    "@semantic-release/release-notes-generator": "^7.3.0",
-    "@types/node": "^12.0.1",
-    "@types/serverless": "^1.18.2",
-    "aws-sdk": "^2.516.0",
+    "@semantic-release/changelog": "^3.0.6",
+    "@semantic-release/commit-analyzer": "^6.3.3",
+    "@semantic-release/github": "^5.5.5",
+    "@semantic-release/npm": "^5.3.4",
+    "@semantic-release/release-notes-generator": "^7.3.5",
+    "@types/node": "^12.12.18",
+    "@types/serverless": "^1.18.4",
+    "aws-sdk": "^2.590.0",
     "commitizen": "^4.0.3",
     "cz-conventional-changelog": "3.0.2",
-    "semantic-release": "^15.13.24",
-    "serverless": "^1.42.2",
+    "semantic-release": "^15.13.31",
+    "serverless": "^1.59.3",
     "typescript": "^3.7.3"
   },
   "scripts": {
