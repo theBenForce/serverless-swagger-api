@@ -189,10 +189,17 @@ export default class SwaggerApiPlugin implements Plugin {
 
     for (const path in restApi.Body.paths) {
       this.serverless.cli.log(`Connecting lambda for ${path} on ${key}`);
+      const pathData = restApi.Body.paths[path];
       const methods = this.filterMethods(restApi.Body.paths[path]);
+      let headers = [];
 
       for (const method in methods) {
         const methodProps = methods[method];
+
+        methodProps.parameters
+          ?.filter(x => x.in.toLowerCase() === "header")
+          ?.map(x => x.name)
+          ?.forEach(header => headers.push(header));
 
         if (
           !methodProps["x-lambda-name"] &&
@@ -230,6 +237,60 @@ export default class SwaggerApiPlugin implements Plugin {
         }
 
         lambdaPermissions[functionName].push(`${method.toUpperCase()}${path}`);
+      }
+
+      headers = headers.reduce((current: Array<string>, next: string) => {
+        if (!current.find(x => x.toLowerCase() === next.toLowerCase())) {
+          current.push(next);
+        }
+
+        return current;
+      }, []);
+
+      if (pathData["cors"] && !pathData["options"]) {
+        const origin = `'${pathData["cors"].origin || "*"}'`;
+        const allowedMethods = `'${(
+          pathData["cors"].methods || Object.keys(methods)
+        )
+          .join(",")
+          .toUpperCase()}'`;
+
+        const allowedHeaders = `'${(pathData["cors"].headers || headers).join(
+          ","
+        )}'`;
+
+        pathData.options = {
+          responses: {
+            200: {
+              description: "Default response",
+              content: {},
+              headers: {
+                "Access-Control-Allow-Origin": { schema: { type: "string" } },
+                "Access-Control-Allow-Methods": { schema: { type: "string" } },
+                "Access-Control-Allow-Headers": { schema: { type: "string" } }
+              }
+            }
+          },
+          "x-amazon-apigateway-integration": {
+            responses: {
+              default: {
+                statusCode: 200,
+                responseParameters: {
+                  "method.response.header.Access-Control-Allow-Origin": origin,
+                  "method.response.header.Access-Control-Allow-Methods": allowedMethods,
+                  "method.response.header.Access-Control-Allow-Headers": allowedHeaders
+                }
+              }
+            },
+            passthroughBehavior: "when_no_match",
+            requestTemplates: {
+              "application/json": JSON.stringify({ statusCode: 200 })
+            },
+            type: "mock"
+          }
+        };
+
+        delete pathData.cors;
       }
     }
 

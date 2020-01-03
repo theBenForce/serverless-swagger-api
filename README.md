@@ -31,6 +31,24 @@ paths:
       ...
 ```
 
+#### CORS Configuration
+
+Add a cors property to the path you want to add CORS options responses to.
+
+```yaml
+paths:
+  /testPath:
+    cors: true
+```
+
+If you want to specify a specific attribute, provide one of the following properties
+
+ | Property | Description                         | Default                                                       |
+ | -------- | ----------------------------------- | ------------------------------------------------------------- |
+ | origin   | A string specifying allowed origins | *                                                             |
+ | headers  | An array of headers to be allowed   | Constructed from the parameters property of every path method |
+ | methods  | An array of methods to be allowed   | Constructed by looking at all methods defined for a path      |
+
 ### Plugin Settings
 
 Now you need to tell the swagger api plugin about your configuration file. Add a `swaggerApi` property to the custom section of your serverless configuration. You can add as many apis as you want by adding children to the `swaggerApi.apis` property.
@@ -60,12 +78,12 @@ custom:
 ##### Properties
 Each API object has the following properties
 
-| Name | Required | Description |
-| --- | --- | --- |
-| Name | Yes | Name of the API that will be used as the `Name` parameter when creating the `AWS::ApiGateway::RestApi` CloudFormation object |
-| Body | Yes | The swagger/openapi file that defines the API |
-| Stage | Yes | The name of the API Gateway stage that will be created |
-| Lambda | No | Default lambda name that will be used if `x-lambda-name` isn't provided on a path |
+| Name   | Required | Description                                                                                                                  |
+| ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Name   | Yes      | Name of the API that will be used as the `Name` parameter when creating the `AWS::ApiGateway::RestApi` CloudFormation object |
+| Body   | Yes      | The swagger/openapi file that defines the API                                                                                |
+| Stage  | Yes      | The name of the API Gateway stage that will be created                                                                       |
+| Lambda | No       | Default lambda name that will be used if `x-lambda-name` isn't provided on a path                                            |
 
 ## License
 
