@@ -247,17 +247,14 @@ export default class SwaggerApiPlugin implements Plugin {
         return current;
       }, []);
 
-      if (pathData["cors"] && !pathData["options"]) {
-        const origin = `'${pathData["cors"].origin || "*"}'`;
-        const allowedMethods = `'${(
-          pathData["cors"].methods || Object.keys(methods)
-        )
+      const pathCors = pathData["cors"] || pathData["x-cors"];
+      if (pathCors && !pathData["options"]) {
+        const origin = `'${pathCors.origin || "*"}'`;
+        const allowedMethods = `'${(pathCors.methods || Object.keys(methods))
           .join(",")
           .toUpperCase()}'`;
 
-        const allowedHeaders = `'${(pathData["cors"].headers || headers).join(
-          ","
-        )}'`;
+        const allowedHeaders = `'${(pathCors.headers || headers).join(",")}'`;
 
         pathData.options = {
           responses: {
@@ -291,6 +288,7 @@ export default class SwaggerApiPlugin implements Plugin {
         };
 
         delete pathData.cors;
+        delete pathData["x-cors"];
       }
     }
 

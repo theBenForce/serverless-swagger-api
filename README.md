@@ -33,33 +33,36 @@ paths:
 
 #### CORS Configuration
 
-Add a cors property to the path you want to add CORS options responses to.
+Add a `x-cors` property to the path you want to add CORS options responses to.
 
 ```yaml
 paths:
   /testPath:
-    cors: true
+    x-cors: true
 ```
 
 If you want to specify a specific attribute, provide one of the following properties
 
- | Property | Description                         | Default                                                       |
- | -------- | ----------------------------------- | ------------------------------------------------------------- |
- | origin   | A string specifying allowed origins | *                                                             |
- | headers  | An array of headers to be allowed   | Constructed from the parameters property of every path method |
- | methods  | An array of methods to be allowed   | Constructed by looking at all methods defined for a path      |
+| Property | Description                         | Default                                                       |
+| -------- | ----------------------------------- | ------------------------------------------------------------- |
+| origin   | A string specifying allowed origins | \*                                                            |
+| headers  | An array of headers to be allowed   | Constructed from the parameters property of every path method |
+| methods  | An array of methods to be allowed   | Constructed by looking at all methods defined for a path      |
 
 ### Plugin Settings
 
 Now you need to tell the swagger api plugin about your configuration file. Add a `swaggerApi` property to the custom section of your serverless configuration. You can add as many apis as you want by adding children to the `swaggerApi.apis` property.
 
 #### updateDeployments
+
 Will automatically update API gateway deployments if not set to `false`.
 
 #### usePackageVersion
+
 The `info.version` value in your OpenAPI file will be overwritten with the version in `package.json`.
 
 #### apis
+
 An object containing all of the APIs to be defined in this stack.
 
 ```yaml
@@ -76,6 +79,7 @@ custom:
 ```
 
 ##### Properties
+
 Each API object has the following properties
 
 | Name   | Required | Description                                                                                                                  |
