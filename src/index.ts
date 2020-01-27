@@ -355,7 +355,7 @@ export default class SwaggerApiPlugin implements Plugin {
       stage
     );
     resources[`${key}ServiceRole`] = this.createServiceRole(
-      stage,
+      this.stackName,
       service,
       key,
       functionNames
