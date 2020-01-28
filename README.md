@@ -89,6 +89,12 @@ Each API object has the following properties
 | Stage  | Yes      | The name of the API Gateway stage that will be created                                                                       |
 | Lambda | No       | Default lambda name that will be used if `x-lambda-name` isn't provided on a path                                            |
 
+
+## Created Resources
+
+### IAM Roles
+An IAM role is created for each API with the name `PrimaryApiServiceRole`
+
 ## License
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdrg-adaptive%2Fserverless-swagger-api.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdrg-adaptive%2Fserverless-swagger-api?ref=badge_large)
