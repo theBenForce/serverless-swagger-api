@@ -363,7 +363,7 @@ export default class SwaggerApiPlugin implements Plugin {
   }
 
   private createServiceRole(
-    stage: any,
+    stackName: string,
     service: string,
     key: string,
     functionNames: any[]
@@ -373,7 +373,7 @@ export default class SwaggerApiPlugin implements Plugin {
     return {
       Type: "AWS::IAM::Role",
       Properties: {
-        RoleName: clipString(`${stage}${service}${key}`, "APIRole"),
+        RoleName: clipString(`${stackName}${service}${key}`, "APIRole"),
         AssumeRolePolicyDocument: {
           Version: "2012-10-17",
           Statement: [
@@ -387,14 +387,19 @@ export default class SwaggerApiPlugin implements Plugin {
           ]
         },
         Policies: [
-          this.createLambdaExecutionPolicy(stage, service, key, functionNames)
+          this.createLambdaExecutionPolicy(
+            stackName,
+            service,
+            key,
+            functionNames
+          )
         ]
       }
     };
   }
 
   private createLambdaExecutionPolicy(
-    stage: any,
+    stackName: any,
     service: string,
     key: string,
     functionNames: any[]
@@ -402,7 +407,7 @@ export default class SwaggerApiPlugin implements Plugin {
     this.serverless.cli.log(`Creating lambda execution policy for ${key}`);
 
     return {
-      PolicyName: clipString(`${stage}-${service}-${key}`, `APIPolicy`),
+      PolicyName: clipString(`${stackName}-${service}-${key}`, `APIPolicy`),
       PolicyDocument: {
         Version: "2012-10-17",
         Statement: functionNames.map(functionName => ({
