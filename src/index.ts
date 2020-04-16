@@ -131,7 +131,7 @@ export default class SwaggerApiPlugin implements Plugin {
         const apiResource = stack.StackResources.find(
           x => x.LogicalResourceId === key
         );
-        const restApiId = this.serverless.service.provider.apiGateway.restApiId || apiResource.PhysicalResourceId;
+        const restApiId = this.serverless.service.provider.apiGateway.restApiId ?? apiResource.PhysicalResourceId;
 
         this.serverless.cli.log(
           `Creating new deployment for ${restApiId} api stage ${stageName}...`
