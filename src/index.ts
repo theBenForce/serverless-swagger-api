@@ -126,12 +126,12 @@ export default class SwaggerApiPlugin implements Plugin {
           restApi.Body.info.version = version;
         }
         const stageName =
-          restApi.Stage || this.serverless.service.provider.stage;
+          restApi.Stage ?? this.serverless.service.provider.stage;
 
         const apiResource = stack.StackResources.find(
           x => x.LogicalResourceId === key
         );
-        const restApiId = apiResource.PhysicalResourceId;
+        const restApiId = this.serverless.service.provider.apiGateway.restApiId ?? apiResource.PhysicalResourceId;
 
         this.serverless.cli.log(
           `Creating new deployment for ${restApiId} api stage ${stageName}...`
@@ -140,7 +140,7 @@ export default class SwaggerApiPlugin implements Plugin {
           .createDeployment({
             restApiId,
             stageName,
-            description: this.options.message || `${this.name} auto-deployment`
+            description: this.options.message ?? `${this.name} auto-deployment`
           })
           .promise();
       } catch (ex) {
@@ -426,7 +426,7 @@ export default class SwaggerApiPlugin implements Plugin {
       Type: "AWS::ApiGateway::Deployment",
       DependsOn: [key],
       Properties: {
-        RestApiId: { Ref: key },
+        RestApiId: this.serverless.service.provider.apiGateway.restApiId ?? { Ref: key },
         StageName: stage
       }
     };
