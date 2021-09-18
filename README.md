@@ -21,7 +21,7 @@ You must manually create your own lambda functions in the serverless configurati
 
 ### Swagger File
 
-Add a `x-lambda-name` property to every path method to bind a part of the api to a lambda.
+Add a `x-lambda-name` property to every path method to bind a part of the api to a lambda. Values specified for `x-lambda-name` is AWS CloudFormation resource names, i.e., [values in the form of `{normalizedFunctionName}LambdaFunction`](https://www.serverless.com/framework/docs/providers/aws/guide/resources#aws-cloudformation-resource-reference). For more information about naming rules, please refer to the [description](https://www.serverless.com/framework/docs/providers/aws/guide/resources#override-aws-cloudformation-resource) in the Serverless Framework documentation.
 
 ```yaml
 paths:
@@ -82,13 +82,12 @@ custom:
 
 Each API object has the following properties
 
-| Name   | Required | Description                                                                                                                  |
-| ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Name   | Yes      | Name of the API that will be used as the `Name` parameter when creating the `AWS::ApiGateway::RestApi` CloudFormation object |
-| Body   | Yes      | The swagger/openapi file that defines the API                                                                                |
-| Stage  | Yes      | The name of the API Gateway stage that will be created                                                                       |
-| Lambda | No       | Default lambda name that will be used if `x-lambda-name` isn't provided on a path                                            |
-
+| Name   | Required | Description                                                                                                                                                          |
+| ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name   | Yes      | Name of the API that will be used as the `Name` parameter when creating the `AWS::ApiGateway::RestApi` CloudFormation object                                         |
+| Body   | Yes      | The swagger/openapi file that defines the API                                                                                                                        |
+| Stage  | Yes      | The name of the API Gateway stage that will be created                                                                                                               |
+| Lambda | No       | Default lambda name that will be used if `x-lambda-name` isn't provided on a path (see the description of `x-lambda-name` for the value to be specified as the name) |
 
 ## Created Resources
 
