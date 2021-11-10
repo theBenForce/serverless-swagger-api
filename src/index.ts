@@ -58,7 +58,7 @@ export default class SwaggerApiPlugin implements Plugin {
 
     this.hooks = {
       "before:package:finalize": this.updateApiDefinitions(),
-      "after:deploy": () => this.updateApiDeployments(),
+      "after:deploy:deploy": () => this.updateApiDeployments(),
       "updateDeployments:update": () => this.updateApiDeployments()
     };
 
