@@ -100,14 +100,19 @@ export default class SwaggerApiPlugin implements Plugin {
       return;
     }
 
+    // workaround due to missing `getCredentials` in the type definition
+    const { credentials }  = (aws as any).getCredentials();
+
     const cloudFormation = new AWS.CloudFormation({
       region,
-      apiVersion: "2010-05-15"
+      apiVersion: "2010-05-15",
+      credentials: credentials,
     });
 
     const apigateway = new AWS.APIGateway({
       region,
-      apiVersion: "2015-07-09"
+      apiVersion: "2015-07-09",
+      credentials: credentials,
     });
 
     const stack = await cloudFormation
