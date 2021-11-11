@@ -69,7 +69,8 @@ export default class SwaggerApiPlugin implements Plugin {
         options: {
           message: {
             usage: "Specify the message attached to this deployment",
-            required: false
+            required: false,
+            type: "string"
           }
         }
       }
