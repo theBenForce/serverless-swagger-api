@@ -27,7 +27,7 @@
     "@semantic-release/release-notes-generator": "^7.3.5",
     "@types/node": "^12.12.18",
     "@types/serverless": "^1.18.4",
-    "aws-sdk": "^2.590.0",
+    "aws-sdk": "^2.814.0",
     "commitizen": "^4.0.3",
     "cz-conventional-changelog": "3.0.2",
     "semantic-release": "^17.2.3",
